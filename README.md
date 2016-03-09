@@ -30,6 +30,9 @@ We would like to include encryption in the Nucleus Framework. At the moment you 
 
 ### Support the project
 The best way to support the project is to contribute to the source code. If you are not a developer or don't have the time to contribute, you can always help the project by helping us spread the word:
+
 [Facebook](https://www.facebook.com/PocketAppsSoftware)
+
 [Twitter](https://twitter.com/MyPocketApps)
+
 [Google+](https://plus.google.com/+PocketappsZaSoftware)
