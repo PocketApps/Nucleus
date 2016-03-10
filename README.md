@@ -8,6 +8,10 @@ Nucleus Framework is a PHP based framework used to accelerate API and network re
 4. Initialize the Nucleus framework `nucleus::init();`
 5. Start writing tests! You can check the examples folder if you need help writing tests
 
+### What's new?
+1. Added support for POST requests
+2. No need to manually format url's. You can now pass an array of parameters to the `create_test` method
+
 ### Why should you use the Nucleus Framework?
 ##### 1. Very useful for building stable and production ready services
 When you run your Nucleus tests, you will not only see which API's failed testing, but you can also keep track of stuff like the response time. You can even include network based tests to show the current status of your web server
@@ -19,13 +23,7 @@ You can integrate this framework in any PHP based service within minutes. And it
 You can download it, redistribute it, modify it or even contribute to the project. This gives you the power to make your services awesome!
 
 ### Restrictions
-##### 1. Only supports GET requests
-At the moment you can only use the Nucleus Framework to test GET requests. We are busy adding support for more request types
-
-##### 2. No support for parameters
-There is currently no support for parameters. You would need to manually format your URL strings
-
-##### 3. No encryption support
+##### 1. No encryption support
 We would like to include encryption in the Nucleus Framework. At the moment you would have to handle the encryption manually
 
 ### Support the project
