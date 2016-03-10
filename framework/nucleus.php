@@ -111,7 +111,8 @@ class nucleus {
         $index = 1;
         foreach ($tests as $test) {
             $json = json_decode($test);
-            echo self::table_test_result($index, $json->{"title"}, $json->{"url"}, $json->{"expected"}, $json->{"value"});
+            echo self::table_test_result($index, $json->{"title"}, $json->{"url"}, $json->{"data"}, $json->{"expected"},
+                $json->{"value"}, $json->{"type"});
             $index++;
         }
 
@@ -124,19 +125,25 @@ class nucleus {
      * The display name used for your API e.g. Authenticating without a password
      * @param string $url
      * The url that should be used to test the API
+     * @param string $data
+     * The data being passed to the API
      * @param string $expectedElement
      * The JSON element that you are expecting in the response
      * @param string $expectedResult
      * The value that you are expecting in the response
+     * @param string $requestType
+     * The type of request being performed: GET or POST
      * @return string
      * Returns a new JSON representation of an API test
      */
-    public static function create_test($title, $url, $expectedElement, $expectedResult) {
+    public static function create_test($title, $url, $data, $expectedElement, $expectedResult, $requestType) {
         return json_encode(array(
             "title" => $title,
             "url" => $url,
+            "data" => json_encode($data),
             "expected" => $expectedElement,
-            "value" => $expectedResult
+            "value" => $expectedResult,
+            "type" => $requestType
         ));
     }
 
@@ -148,15 +155,19 @@ class nucleus {
      * The display name used for the website e.g. Authenticating without a password
      * @param string $url
      * The url that should be used to test the API
+     * @param string $data
+     * The data being passed to the API. This should be in Json format
      * @param string $expectedElement
      * The JSON element that you are expecting in the response
      * @param string $expectedResult
      * The value that you are expecting in the response
+     * @param string $requestType
+     * The type of request being performed: GET or POST
      * @return string
      * Returns the generate HTML content
      */
-    private static function table_test_result($index, $title, $url, $expectedElement, $expectedResult) {
-        $json = json_decode(self::run($url, $expectedElement, $expectedResult));
+    private static function table_test_result($index, $title, $url, $data, $expectedElement, $expectedResult, $requestType) {
+        $json = json_decode(self::run($url, json_decode($data), $expectedElement, $expectedResult, $requestType));
 
         $passedClass = $json->{"passed"} ? "success" : "danger";
         $passedText = $json->{"passed"} ? "Yes" : "No";
@@ -175,19 +186,40 @@ class nucleus {
      * Internal method used to test an API
      * @param string $url
      * The url that should be used to test the API
+     * @param string $data
+     * The data being passed to the API
      * @param string $expectedElement
      * The JSON element that you are expecting in the response
      * @param string $expectedResult
      * The value that you are expecting in the response
+     * @param string $requestType
+     * The type of request being performed: GET or POST
      * @return string
      * Returns the test result
      */
-    private static function run($url, $expectedElement, $expectedResult) {
+    private static function run($url, $data, $expectedElement, $expectedResult, $requestType) {
         $start = microtime(true);
         try {
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            switch ($requestType) {
+                case "GET":
+                    curl_setopt($ch, CURLOPT_POST, false);
+                    $url = self::build_url($url, $data);
+                    break;
+                case "POST":
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                    break;
+                default:
+                    return json_encode(array(
+                        "passed" => true,
+                        "time" => floor((microtime(true) - $start) * 1000)
+                    ));
+            }
+
+            curl_setopt($ch, CURLOPT_URL, $url);
             $response = curl_exec($ch);
 
             if (empty($response)) {
@@ -209,5 +241,13 @@ class nucleus {
                 "time" => floor((microtime(true) - $start) * 1000)
             ));
         }
+    }
+
+    private static function build_url($baseUrl, $data) {
+        $url = $baseUrl . "?";
+        foreach ($data as $key => $value) {
+            $url .= $key . "=" . $value . "&";
+        }
+        return substr($url, 0, strlen($url)-1);
     }
 }
