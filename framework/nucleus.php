@@ -137,10 +137,15 @@ class nucleus {
      * Returns a new JSON representation of an API test
      */
     public static function create_test($title, $url, $data, $expectedElement, $expectedResult, $requestType) {
+        $utf8Data = array();
+        foreach ($data as $key => $value) {
+            $utf8Data[$key] = utf8_encode($value);
+        }
+
         return json_encode(array(
             "title" => $title,
             "url" => $url,
-            "data" => json_encode($data),
+            "data" => json_encode($utf8Data),
             "expected" => $expectedElement,
             "value" => $expectedResult,
             "type" => $requestType
@@ -200,17 +205,22 @@ class nucleus {
     private static function run($url, $data, $expectedElement, $expectedResult, $requestType) {
         $start = microtime(true);
         try {
+            $originalData = array();
+            foreach ($data as $key => $value) {
+                $originalData[$key] = utf8_decode($value);
+            }
+
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
             switch ($requestType) {
                 case "GET":
                     curl_setopt($ch, CURLOPT_POST, false);
-                    $url = self::build_url($url, $data);
+                    $url = self::build_url($url, $originalData);
                     break;
                 case "POST":
                     curl_setopt($ch, CURLOPT_POST, true);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $originalData);
                     break;
                 default:
                     return json_encode(array(
